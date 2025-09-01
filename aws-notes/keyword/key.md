@@ -142,3 +142,27 @@ NAT Gateway を各 VPC に置くより、1つの egress VPC にまとめたほ�
 App VPC1 ─┐
 App VPC2 ─┼──> [Egress VPC] ──> Internet
 App VPC3 ─┘
+
+🔹 Unicast（Elastic IPなど）の場合
+
+IP アドレス = 1つのサーバーやロードバランサーに直結
+
+どこからアクセスしても、その特定リージョンまでトラフィックが行く
+
+例: 東京に Elastic IP を持つ EC2
+
+東京のユーザー → 速い
+
+アメリカのユーザー → 東京まで遠回りなので遅い
+
+🔹 Anycast（Global Accelerator）の場合
+
+IP アドレス = 世界中で共通
+
+最寄りの AWS エッジロケーションに吸い込まれ、そこから AWS バックボーンで目的のリージョンに最適ルーティング
+
+例: Global Accelerator の Anycast IP
+
+東京のユーザー → 東京のエッジに入って東京リージョンへ
+
+アメリカのユーザー → アメリカのエッジに入ってバージニアリージョンへ
