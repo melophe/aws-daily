@@ -24,7 +24,7 @@
    - Origin Protocol Policy = HTTPS only に設定
 
 #### メリット
-- **✅ 一般的に最もシンプル**
+- ** 一般的に最もシンプル**
 - コストが比較的安価
 
 ### 方法2: ACM Private CA を使用
@@ -40,7 +40,7 @@
    - Origin Access Control (OAC) 設定と併用可能
 
 #### 適用ケース
-- **✅ 完全に AWS 内で閉じたい場合の選択肢**
+- ** 完全に AWS 内で閉じたい場合の選択肢**
 
 ### 方法3: 外部証明書の ACM インポート
 
@@ -53,7 +53,7 @@
 
 ## ACM 対応サービス
 
-### ✅ ACM が使えるサービス
+###  ACM が使えるサービス
 
 - **CloudFront**
 - **ELB（ALB, NLB, CLB）**
