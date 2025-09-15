@@ -1,30 +1,30 @@
 # Amazon API Gateway
 
 ## 概要
-**「REST APIやWebSocket APIを簡単に作成・公開・管理できるサービス」**
+REST APIやWebSocket APIを簡単に作成・公開・管理できるサービス
 
 アプリケーションのフロントドアのような役割を果たす
 
 ## 主な機能
 
 ### APIの作成と公開
-- REST API / HTTP API / WebSocket API を簡単に構築可能
-- URLエンドポイントを公開して、バックエンド（Lambda, EC2, ECS, VPC, SaaSサービスなど）につなげられる
+- REST API / HTTP API / WebSocket API を簡単に構築
+- URLエンドポイントを公開してバックエンド（Lambda, EC2, ECS, VPC, SaaSサービス等）に接続
 
 ### リクエスト制御
 - 認証・認可（IAM、Cognito、Lambda Authorizer）
 - レート制限、スロットリング、APIキーによる制御
 
 ### 変換・統合
-- リクエストやレスポンスを変換して、バックエンドに合わせた形式に変換
-- 複数のマイクロサービスを1つのAPIとしてまとめられる
+- リクエストやレスポンスを変換してバックエンドに合わせた形式に変換
+- 複数のマイクロサービスを1つのAPIとしてまとめることが可能
 
 ### モニタリング
 - CloudWatchと連携してリクエスト数、レイテンシ、エラーレートを可視化
 
 ### スケーラビリティ
-- 自動でスケーリング（数リクエスト/秒から数十万リクエスト/秒まで対応可能）
-- インフラ管理は不要
+- 自動でスケーリング（数リクエスト/秒から数十万リクエスト/秒まで対応）
+- インフラ管理不要
 
 ## 利用シナリオ
 
@@ -47,135 +47,161 @@ WebSocket APIでデバイスやクライアントと双方向通信
 ### 概要
 一定時間あたりのリクエスト数を制限する仕組み
 
-- クライアントのリクエストが多すぎると、API Gateway 側で **429 Too Many Requests** を返す
-- バックエンド（LambdaやEC2）がリクエスト過多でダウンするのを防げる
+- クライアントのリクエストが多すぎると、API Gateway側で **429 Too Many Requests** を返す
+- バックエンド（LambdaやEC2）がリクエスト過多でダウンするのを防止
 
 ### スロットリングの種類
 
-#### 1. ステージ単位のスロットリング
-API Gateway のステージ（例: dev, prod）ごとに設定
+#### ステージ単位のスロットリング
+API Gatewayのステージ（例: dev, prod）ごとに設定
 
-- **レート (Rate)**: 1秒あたりのリクエスト数
-- **バースト (Burst)**: 短時間に許可する最大同時リクエスト数
+##### 設定項目
+- **Rate**: 1秒あたりのリクエスト数
+- **Burst**: 短時間に許可する最大同時リクエスト数
 
-**例:**
+##### 設定例
 - Rate = 100 req/sec
 - Burst = 200 req
 
-通常は100/秒だけど、瞬間的に200までは許可、それ以上は 429
+通常は100/秒だが、瞬間的に200までは許可、それ以上は 429
 
-#### 2. APIキーごとのスロットリング
-- APIキーと**使用プラン (Usage Plan)** を組み合わせて、特定のユーザーごとに制限可能
-- 「無料プランは 10req/sec」「有料プランは 100req/sec」みたいに制御できる
+#### APIキーごとのスロットリング
+- APIキーと**使用プラン (Usage Plan)** を組み合わせて特定のユーザーごとに制限
+- 「無料プランは 10req/sec」「有料プランは 100req/sec」のような制御が可能
 
-### まとめ
-- API Gateway にはスロットリング機能あり
+### スロットリングの動作
 - **Rate（秒あたり）** と **Burst（一時的な上限）** を組み合わせて制御
-- ステージ単位・APIキー単位で設定できる
-- 超過すると **429 Too Many Requests** を返す
-
-**API Gateway はリクエスト数を制御して、バックエンドを守るためのスロットリング機能を持つ**
+- ステージ単位・APIキー単位で設定可能
+- 制限を超過すると **429 Too Many Requests** を返す
 
 ---
 
-# API Gateway レスポンスキャッシュ
+## レスポンスキャッシュ
 
-## 概要
+### 概要
 - 同じリクエストに対して一定期間キャッシュされたレスポンスを返す
-- バックエンド(Lambdaなど)の呼び出しを減らせる
-- **パフォーマンス改善** & **コスト削減**につながる
+- バックエンド(Lambda等)の呼び出しを減らす
+- パフォーマンス改善とコスト削減を実現
 
-### 特徴
+### キャッシュ設定
 
 #### キャッシュ単位
-- ステージごとにキャッシュを有効化可能
-- キャッシュは APIのメソッド + クエリパラメータ + ヘッダ の組み合わせで判定
+- ステージごとにキャッシュを有効化
+- APIのメソッド + クエリパラメータ + ヘッダの組み合わせで判定
 
 #### キャッシュサイズ
-- 0.5GB 〜 237GB を選択できる（デフォルトは有効化されていない）
+0.5GB 〜 237GB を選択（デフォルトは無効）
 
 #### キャッシュ有効期間 (TTL)
 - デフォルト: 300秒 (5分)
-- 1秒 〜 3600秒 (1時間) の範囲で設定可能
+- 設定範囲: 1秒 〜 3600秒 (1時間)
 
 #### キャッシュクリア
 - 手動でキャッシュ削除（API Gatewayコンソール or CLIから）
-- デプロイ時に自動でキャッシュ削除設定も可能
+- デプロイ時の自動キャッシュ削除設定も可能
 
 ### メリット
-- **レイテンシ改善**: API Gatewayが直接キャッシュを返すので高速
-- **コスト削減**: Lambdaやバックエンドの呼び出し回数が減る
-- **スパイク対策**: 広告やキャンペーンで急激にアクセスが増えてもバックエンドへの負荷を抑えられる
+- **レイテンシ改善**: API Gatewayが直接キャッシュを返すため高速
+- **コスト削減**: Lambdaやバックエンドの呼び出し回数を削減
+- **スパイク対策**: 急激なアクセス増加時もバックエンドへの負荷を抑制
 
-### デメリット・注意点
-- **動的データには不向き**: 最新情報が必須なデータ（例: 銀行残高）はキャッシュに不適
-- **追加コスト**: API Gatewayのキャッシュ容量ごとに追加課金される
-- **ステージ単位でしか有効化できない**（メソッド単位では不可。ただし「キャッシュキー」を細かく設定することで挙動を制御できる）
+### 制限事項・注意点
+- **動的データには不向き**: 最新情報が必須なデータ（銀行残高等）はキャッシュに不適
+- **追加コスト**: API Gatewayのキャッシュ容量ごとに追加課金
+- **ステージ単位での有効化**（メソッド単位不可。キャッシュキーの細かい設定で制御可能）
 
-### ユースケース
+### 適用場面
 - ニュース記事一覧、商品一覧、ランキングAPI
 - 認証済みユーザーごとに同じデータを返すAPI
 - 読み取り頻度が高く、変更頻度が比較的低いデータ
 
-# API Gateway と統合できるサービス一覧
-## コンピュート
+---
 
-### AWS Lambda
-最も一般的。REST/HTTPリクエストを関数実行へ変換
+## バックエンド統合
 
-## HTTP API ファーストクラス統合
+### HTTP API ファーストクラス統合
 
-### EventBridge
-- EventBridge-PutEvents（イベントを EventBridge に送信）
+#### EventBridge
+- EventBridge-PutEvents（イベントをEventBridgeに送信）
 
-### SQS
+#### SQS
 - SQS-SendMessage（メッセージ送信）
 - SQS-ReceiveMessage（メッセージ取得）
 - SQS-DeleteMessage（メッセージ削除）
-- SQS-PurgeQueue（キュー空にする）
+- SQS-PurgeQueue（キューを空にする）
 
-### AppConfig
+#### AppConfig
 - AppConfig-GetConfiguration（設定取得）
 
-### Kinesis Data Streams
+#### Kinesis Data Streams
 - Kinesis-PutRecord（ストリームにデータ投入）
 
-### Step Functions
+#### Step Functions
 - StepFunctions-StartExecution（ステートマシン実行）
 - StepFunctions-StartSyncExecution（同期実行）
 - StepFunctions-StopExecution（実行停止）
 
-## REST API 統合（標準）
+### REST API 統合（標準）
 
-### AWS Lambda
-- AWS_PROXY／AWS 統合で呼び出し可能
+#### AWS Lambda
+AWS_PROXY／AWS統合で呼び出し
 
-### Amazon S3
-- オブジェクト操作
+#### Amazon S3
+オブジェクト操作
 
-### Amazon DynamoDB
-- Put/Get/Update/Delete など
+#### Amazon DynamoDB
+Put/Get/Update/Delete等
 
-### Amazon SNS
-- Publish
+#### Amazon SNS
+Publish
 
-### Amazon Cognito
-- 認証
+#### Amazon Cognito
+認証
 
-## VPCプライベートサービス統合
-- VPC内のプライベートサービス（ALB/NLB を経由して）への統合は、**VPC Link 機能**を使って可能
+### VPCプライベートサービス統合
+VPC内のプライベートサービス（ALB/NLB経由）への統合は **VPC Link機能** を使用
 
 ---
 
-## まとめ表
+## 統合可能サービス比較表
 
 | カテゴリ | サービス |
 |----------|----------|
 | **HTTP API ファーストクラス統合** | EventBridge, SQS, AppConfig, Kinesis, Step Functions |
-| **REST API 統合（標準 API）** | Lambda, S3, DynamoDB, SNS, Cognito, Step Functions |
-| **プライベートエンドポイント統合** | VPC Link経由で ALB/NLBなど |
+| **REST API 統合（標準）** | Lambda, S3, DynamoDB, SNS, Cognito, Step Functions |
+| **プライベートエンドポイント統合** | VPC Link経由でALB/NLB等 |
 
-### 選択指針
-- **HTTP API を使う場合** → EventBridge, SQS, AppConfig, Kinesis, Step Functions などが「サービス統合対象」として明確にサポート
-- **REST API や他ユースケース** → Lambda、S3、DynamoDB、SNS、Cognito など、さらに豊富なサービス連携が選択可能
-- **VPC 内プライベートサービスと連携** → VPC Link の利用を推奨
+---
+
+## AWS サービス統合詳細
+
+### コンピュート・実行系
+- **Lambda**: 最も一般的。サーバーレスでコード実行
+- **EC2 / ECS / EKS**: HTTP統合でEC2上のアプリやコンテナサービスを呼び出し
+- **Elastic Load Balancer (ALB/NLB)**: 複数インスタンスに振り分けてスケール
+
+### ワークフロー・処理系
+- **Step Functions**: ワークフロー（バッチ処理や連携タスク）実行
+
+### データベース・ストレージ系
+- **DynamoDB**: API Gatewayから直接CRUD操作（専用統合あり）
+
+### メッセージング・通知系
+- **SQS**: キューにメッセージを投入。非同期処理で使用
+- **SNS**: トピックに通知をパブリッシュ
+
+### ストリーミング・リアルタイム系
+- **Kinesis Data Streams / Firehose**: ストリーミングデータ送信
+
+---
+
+## 選択指針
+
+### HTTP API使用時
+EventBridge, SQS, AppConfig, Kinesis, Step Functions等がファーストクラス統合として明確にサポート
+
+### REST API使用時
+Lambda、S3、DynamoDB、SNS、Cognito等、より豊富なサービス連携が選択可能
+
+### VPC内プライベートサービス連携時
+VPC Linkの利用を推奨

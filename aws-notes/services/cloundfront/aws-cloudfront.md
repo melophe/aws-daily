@@ -4,9 +4,11 @@
 
 ### 通信フロー
 
-1. **Viewer** → CloudFront にリクエストを送る（例：ユーザーのブラウザ）
-2. **CloudFront** → キャッシュを確認して、なければオリジンに取りに行く
-3. **Origin** → コンテンツの本体を持っているサーバーやストレージ
+1. Viewer → CloudFront にリクエストを送る（例：ユーザーのブラウザ）
+2. CloudFront → キャッシュを確認して、なければオリジンに取りに行く
+3. Origin → コンテンツの本体を持っているサーバーやストレージ
+
+---
 
 ## オリジン設定
 
@@ -14,51 +16,53 @@
 
 CloudFront のオリジンとしては以下が選択可能：
 
-- **S3 バケット**（静的コンテンツ配信の定番）
-- **ELB / ALB**（Web サービスのフロント）
-- **EC2 インスタンス**（直接 Web サーバーとして動いている場合）
-- **オンプレや外部の Web サーバー**（CloudFront からインターネット越しにアクセス可能）
+- S3 バケット（静的コンテンツ配信の定番）
+- ELB / ALB（Web サービスのフロント）
+- EC2 インスタンス（直接 Web サーバーとして動いている場合）
+- オンプレや外部の Web サーバー（CloudFront からインターネット越しにアクセス可能）
+
+---
 
 ## SSL/TLS 証明書の設定
 
 ### ACM（AWS Certificate Manager）証明書の対応
 
-**ACM で発行した証明書は、AWS マネージドサービスにのみ直接アタッチ可能**
+ACM で発行した証明書は、AWS マネージドサービスにのみ直接アタッチ可能
 
-####  ACM が使えるサービス
+#### ACM が使えるサービス
 
-- **CloudFront**
-- **ELB（ALB, NLB, CLB）**
-- **API Gateway**
-- **App Runner**
+- CloudFront
+- ELB（ALB, NLB, CLB）
+- API Gateway
+- App Runner
 - その他一部のマネージドサービス
 
-> これらは AWS が「証明書のインストール・更新」を自動で実行
+これらは AWS が「証明書のインストール・更新」を自動で実行
 
-#### ❌ ACM が使えないケース
+#### ACM が使えないケース
 
-- **EC2 上の Web サーバー**（Apache, Nginx, IIS）
-- **オンプレミスの Web サーバー**
-- **S3 静的ウェブサイトホスティング**（S3 に証明書を配置する仕組みなし）
+- EC2 上の Web サーバー（Apache, Nginx, IIS）
+- オンプレミスの Web サーバー
+- S3 静的ウェブサイトホスティング（S3 に証明書を配置する仕組みなし）
 
-> 自分でサーバーを管理するリソースでは ACM 証明書を直接配置不可
+自分でサーバーを管理するリソースでは ACM 証明書を直接配置不可
 
 #### 代替手段
 
-1. **外部 CA から証明書取得**
+1. 外部 CA から証明書取得
    - Let's Encrypt, DigiCert などから証明書を取得してサーバーにインストール
 
-2. **ACM Private CA 利用**
+2. ACM Private CA 利用
    - ACM Private CA で発行した証明書をダウンロードしてインストール
 
 ### S3 の特殊ルール
 
 #### CloudFront + S3 バケット構成
 
-- **CloudFront 側に ACM 証明書設定** → Viewer との HTTPS 通信が暗号化
-- **S3 自体** → AWS が HTTPS エンドポイントを提供（`https://bucket.s3.amazonaws.com`）
+- CloudFront 側に ACM 証明書設定 → Viewer との HTTPS 通信が暗号化
+- S3 自体 → AWS が HTTPS エンドポイントを提供（`https://bucket.s3.amazonaws.com`）
 
-> S3 では自前での証明書管理は不要
+S3 では自前での証明書管理は不要
 
 ---
 
@@ -84,15 +88,17 @@ CDNなど共有キャッシュ専用の有効期限（CloudFrontはこちらを�
 #### public / private
 public は共有キャッシュ可、private はユーザ専用キャッシュのみ
 
+---
+
 ## CloudFrontとCache-Controlの関係
 
 CloudFrontはオリジン（例: S3, ALB, EC2）からレスポンスを受け取ったとき、以下を見てキャッシュ挙動を決定
 
 ### 優先順位
-1. **Cache-Control: s-maxage** → これがあれば最優先で使われる
-2. **Cache-Control: max-age** → s-maxageが無ければこれを参照
-3. **Expires ヘッダー** → Cache-Controlが無ければ参照
-4. **CloudFrontのデフォルトTTL設定** → それらが無ければこれを利用
+1. Cache-Control: s-maxage → これがあれば最優先で使われる
+2. Cache-Control: max-age → s-maxageが無ければこれを参照
+3. Expires ヘッダー → Cache-Controlが無ければ参照
+4. CloudFrontのデフォルトTTL設定 → それらが無ければこれを利用
 
 ### CloudFront側での制御
 CloudFrontには キャッシュポリシー があり、オリジンからのヘッダーをどう扱うか選べる
@@ -105,6 +111,8 @@ CloudFront側でTTLを強制指定（オリジン無視も可能）
 
 #### Caching disabled
 キャッシュを完全にしない
+
+---
 
 ## よくある使い方
 
@@ -122,10 +130,14 @@ Cache-Control: no-store または private, no-cache
 ### S3をオリジンに使う場合
 S3オブジェクトのメタデータで Cache-Control を設定可能（CLIやS3コンソールから設定できる）
 
+---
+
 ## 注意点
 - CloudFrontがオリジンの指示を無視する設定になっている場合、Cache-Controlを送っても効かない ことがある
 - 動的APIのキャッシュは要注意（個人情報や更新頻度高いデータはキャッシュしない方が安全）
 - キャッシュ削除は Invalidation を使う必要がある（設定TTL待ちでは時間がかかる）
+
+---
 
 ## max-age を長くする効果
 CloudFrontやブラウザがオリジンに問い合わせる頻度を減らせる
@@ -157,7 +169,81 @@ JS/CSS/画像など、ビルド時にハッシュ付きファイル名にする
 
 更新時はファイル名が変わるので古いキャッシュが影響しない
 
+---
+
 ## 実践でよくやるパターン
-- **静的アセット（CSS/JS/画像）** → `max-age=31536000, immutable`
-- **APIレスポンス（更新あり）** → `s-maxage=60, max-age=0, must-revalidate`
-- **HTML（トップページなど）** → `s-maxage=300, max-age=0`
+- 静的アセット（CSS/JS/画像） → `max-age=31536000, immutable`
+- APIレスポンス（更新あり） → `s-maxage=60, max-age=0, must-revalidate`
+- HTML（トップページなど） → `s-maxage=300, max-age=0`
+
+---
+
+## WACL で使える主なルールタイプ
+
+| ルールタイプ | 説明 | 例 |
+|-------------|------|-----|
+| IP Set | 許可/拒否する IP アドレスのリスト | 特定のIPからのみアクセス許可 |
+| GeoMatch | 国コードでアクセス制御 | CN からのアクセスをブロック |
+| Rate-based rule | 一定時間あたりのリクエスト数で制御 | DDoS/ブルートフォース防止 |
+| String/Regex match | HTTPヘッダ/URI/ボディなど文字列パターンでマッチ | /admin へのアクセスを制限 |
+| Size constraint | リクエストのサイズ制御 | 大きすぎるリクエストを拒否 |
+| SQLi/XSS rule | SQLインジェクション/XSS のシグネチャ検知 | セキュリティ強化 |
+| Managed Rule Groups | AWSが提供するマネージドルール集 | OWASP Top 10 対策など |
+
+---
+
+## ポイント
+
+### ルール評価の仕組み
+- 1つのリソース（例：ALB）に関連付けられる Web ACL は 1つだけ
+- ルールは優先順位順に評価され、最初にマッチしたものが適用される
+- 最後までマッチしなければ デフォルトアクション（Allow または Block）が適用される
+
+### Web ACL の制約
+1つのリソース（ALB / CloudFront / API Gateway / AppSync など）には、1つの Web ACL しか関連付けできない
+
+つまり ALB に「WACL-A」「WACL-B」を両方同時に付けることはできない
+
+### Web ACL の構成
+Web ACL = 大きな箱
+
+その中に
+- GeoMatchルール
+- IP制限ルール
+- Rate-basedルール
+- SQLi/XSS検知ルール
+
+などを追加してまとめる
+
+なので「複数つけられない」といっても、1つのWeb ACLで全部の制御をまとめる設計
+
+---
+
+## 価格クラスの種類
+
+CloudFront には主に 3 つの価格クラスがある：
+
+### Price Class 100
+- 米国、カナダ、ヨーロッパ など主要地域のみ
+- 最安だけど、アジアや南米のユーザーは遠いエッジから配信される可能性がある
+
+### Price Class 200
+- Price Class 100 + アジアの主要地域
+- そこそこコストとパフォーマンスのバランス
+
+### Price Class All（デフォルト）
+- 全世界のエッジロケーションを利用
+- 最も速いが、コストは高め
+
+---
+
+## 使い分け
+
+### グローバルサイトで、全世界のユーザーに快適に届けたい
+Price Class All
+
+### 主に北米・欧州ユーザーだけなら
+Price Class 100
+
+### アジアも対象なら
+Price Class 200
