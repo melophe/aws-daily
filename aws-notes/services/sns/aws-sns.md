@@ -211,3 +211,20 @@ SNSはat least once delivery（少なくとも1回は配信）を保証する。
 - SNSは「少なくとも1回は配送される」配信保障を提供
 - 強い保証が欲しいならSQSやLambdaと組み合わせる
 - 配信失敗を拾いたいならDLQを設定するのがベストプラクティス
+
+---
+
+## SNSに直接publish可能なサービス
+
+AWSが公式にSNS連携のターゲットとして提供しているサービス
+
+### 対象サービス
+- **CloudWatch Alarms**: メトリクスしきい値通知
+- **S3**: オブジェクト作成イベント → SNS
+- **RDS**: イベント通知
+- **CloudFormation**: スタック通知
+- **Auto Scaling**: イベント通知
+- **Elastic Beanstalk**: イベント通知
+
+### 特徴
+これらは「イベント発生 → そのままSNSトピックにpublish」が可能
