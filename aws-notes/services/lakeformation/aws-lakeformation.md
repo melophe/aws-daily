@@ -144,3 +144,23 @@
 
 ### まとめ
 **Lake Formationは「データのコピーなしで安全に共有する仕組み」を提供**
+
+S3 の場合
+
+そのまま Lake Formation に登録できる
+
+Lake Formation は 「データレイクのカタログ管理」 をしているイメージ
+
+なので S3 バケットをデータソースとして指定すれば、Glue Data Catalog 経由でテーブルとして認識できる
+
+→ 追加のETL処理なしで Athena や Redshift Spectrum からクエリ可能
+
+🔹 RDS の場合
+
+RDS のデータは 直接 Lake Formation に食わせられない
+
+代わりに AWS Glue のクローラー を使ってスキーマをカタログ化する必要がある
+
+Glue の JDBC コネクタで RDS（PostgreSQL, MySQL など）に接続し、テーブル定義を Data Catalog にインポート
+
+これで Lake Formation 経由でアクセス制御しつつ、Athena/Redshift/EMR から分析できる

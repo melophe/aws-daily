@@ -155,3 +155,39 @@ Accelerator (固定Anycast IP)
 1. **グローバル配信の低レイテンシ化**（最寄りリージョンに誘導）
 2. **即時フェイルオーバーによる高可用性**（DNSキャッシュ待ちなし）
 3. **固定グローバルIPの提供によるシンプルな運用とセキュリティ**
+
+整理
+
+AWS Global Accelerator は、ALB / NLB の フロントに置けるサービス
+
+でも実際には NLBと組み合わせるのがベストプラクティス
+
+ なぜ ALB ではなく NLB なのか？
+
+Global Accelerator の仕組み
+
+世界中のユーザーからのトラフィックを AWS グローバルネットワークで最適なエッジに引き込み
+
+その後、リージョン内のエンドポイント（ALBやNLBなど）に転送
+
+ALB を直接つなぐことも可能
+
+ただし ALB は L7 (HTTP/HTTPS) のみ対応
+
+Global Accelerator が持つ TCP/UDPレベルの最適化 をフルに活かせない
+
+NLB を使うメリット
+
+L4 (TCP/UDP) で処理 → 高パフォーマンス、低レイテンシ
+
+Global Accelerator との統合が最適（高可用性・高速化を最大限に活かせる）
+
+ 正しい構成
+
+Network Load Balancer のリスナールールで必要なプロトコルとポートを設定 → NLBをEC2に構成 → AWS Global AcceleratorをNLBに関連付ける
+
+まとめ
+
+ALBはアプリ層 (L7) 用
+
+NLBはネットワーク層 (L4) 用 & Global Acceleratorと最適

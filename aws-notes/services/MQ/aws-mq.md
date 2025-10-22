@@ -76,3 +76,7 @@
 - **普段はアクティブが処理**
 - **障害時はスタンバイがフェイルオーバーして継続**
 - **ユーザー側は意識せずに利用できる**
+
+Advanced Messages Onchain Protocol (AMOP) プロトコルは、Apache ActiveMQで使用されるメッセージングプロトコル
+
+Amazon MQを利用することでApache ActiveMQを用いたキューイングを実施することが可能

@@ -43,3 +43,7 @@
 - **概要**: Kubernetesを通じてAWSリソースを直接定義し、利用するための新たなツール
 - **目的**: Kubernetesアプリケーションの運用をより効率的に行うためのコントローラー
 - **注意**: スケーリング機能ではない
+
+Kubernetes Secrets は、Kubernetesというオープンソースの機能
+
+Kubernetes Secrets は EKS（＝AWSのマネージドKubernetes）に限らず、Kubernetesそのものの標準機能。
